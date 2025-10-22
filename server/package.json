@@ -6,11 +6,12 @@
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.ts",
+    "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "create-token": "ts-node scripts/createToken.ts",
-    "associate-token": "ts-node scripts/associateToken.ts"
+    "associate-token": "ts-node scripts/associateToken.ts",
+    "test-transfer": "ts-node scripts/testTransfer.ts"
   },
   "keywords": [],
   "author": "",
