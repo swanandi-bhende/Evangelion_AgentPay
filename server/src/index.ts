@@ -21,7 +21,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Test transfer endpoint (for manual testing)
+// Test transfer endpoint
 app.post('/test-transfer', async (req, res) => {
   try {
     const env = getEnvVars();
@@ -56,17 +56,57 @@ app.post('/test-transfer', async (req, res) => {
   }
 });
 
+// ✅ New: Get token balances for sender and recipient
+app.get('/balances', async (req, res) => {
+  try {
+    const env = getEnvVars();
+
+    const senderBalance = await hederaService.getTokenBalance(
+      env.senderAccountId,
+      env.tokenId
+    );
+
+    const recipientBalance = await hederaService.getTokenBalance(
+      env.recipientAccountId,
+      env.tokenId
+    );
+
+    res.json({
+      success: true,
+      tokenId: env.tokenId,
+      balances: {
+        sender: {
+          accountId: env.senderAccountId,
+          balance: senderBalance
+        },
+        recipient: {
+          accountId: env.recipientAccountId,
+          balance: recipientBalance
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in /balances:", error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Internal server error"
+    });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 AgentPay Backend running on port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/health`);
+  console.log(`AgentPay Backend running on port ${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Balance check: http://localhost:${PORT}/balances`);
 });
 
 // Validate environment on startup
 try {
   validateEnvironment();
-  console.log('✅ Environment variables validated');
+  console.log('Environment variables validated');
 } catch (error) {
-  console.error('❌ Environment validation failed:', error);
+  console.error('Environment validation failed:', error);
   process.exit(1);
 }

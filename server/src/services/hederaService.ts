@@ -5,7 +5,8 @@ import {
   TransactionReceipt,
   Hbar,
   AccountId,
-  TokenId
+  TokenId,
+  AccountBalanceQuery
 } from "@hashgraph/sdk";
 import dotenv from "dotenv";
 
@@ -42,7 +43,7 @@ export class HederaService {
 
       // Create the token transfer transaction
       const transaction = new TransferTransaction()
-        .addTokenTransfer(TokenId.fromString(tokenId), AccountId.fromString(senderId), -amount * 100) // assumes 2 decimals
+        .addTokenTransfer(TokenId.fromString(tokenId), AccountId.fromString(senderId), -amount * 100) // 2 decimal precision
         .addTokenTransfer(TokenId.fromString(tokenId), AccountId.fromString(receiverId), amount * 100)
         .setMaxTransactionFee(new Hbar(1))
         .freezeWith(client);
@@ -77,13 +78,23 @@ export class HederaService {
   }
 
   /**
-   * Get token balance (placeholder method)
+   * Get token balance using AccountBalanceQuery
    */
   async getTokenBalance(accountId: string, tokenId: string): Promise<number> {
     try {
-      // Placeholder – real implementation would use AccountBalanceQuery
-      console.log(`Checking balance for account ${accountId}`);
-      return 0;
+      const client = Client.forTestnet();
+
+      const balance = await new AccountBalanceQuery()
+        .setAccountId(accountId)
+        .execute(client);
+
+      const tokenBalances = balance.tokens;
+      const tokenIdObj = TokenId.fromString(tokenId);
+
+      // Safely retrieve the token balance
+      const tokenBalance = tokenBalances?.get(tokenIdObj);
+      return tokenBalance ? tokenBalance.toNumber() / 100 : 0;
+
     } catch (error) {
       console.error("Balance check failed:", error);
       return 0;
