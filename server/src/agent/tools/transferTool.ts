@@ -9,47 +9,37 @@ export function createTransferTool(): DynamicTool {
   return new DynamicTool({
     name: "hedera_token_transfer",
     description: `Use this tool to transfer a specified amount of TPYUSD tokens from the sender to a receiver on the Hedera network.
-    
-    Input should be a JSON string with the following properties:
-    - amount: number (the amount of TPYUSD to transfer)
-    - receiverId: string (the Hedera account ID of the recipient, e.g., "0.0.12345")
-    
-    Example input: '{"amount": 10, "receiverId": "0.0.12345"}'`,
-    
+
+Input should be a JSON object with:
+- amount: number (how many TPYUSD to send)
+- receiverId: string (Hedera account ID, e.g., "0.0.12345")
+
+Example: {"amount": 10, "receiverId": "0.0.12345"}`,
+
     func: async (input: string) => {
       try {
-        console.log("🛠️ Transfer tool called with input:", input);
-        
-        // Parse the input
+        console.log("🛠️ Transfer tool input:", input);
+
         let parsedInput;
         try {
           parsedInput = JSON.parse(input);
-        } catch (parseError) {
-          return `Error: Invalid input format. Please provide a valid JSON object with 'amount' and 'receiverId' properties.`;
+        } catch {
+          return `❌ Invalid input format. Use valid JSON with 'amount' and 'receiverId'.`;
         }
 
         const { amount, receiverId } = parsedInput;
-        
-        // Validate input
-        if (!amount || !receiverId) {
-          return `Error: Missing required parameters. Please provide both 'amount' and 'receiverId'.`;
-        }
 
-        if (typeof amount !== 'number' || amount <= 0) {
-          return `Error: Amount must be a positive number.`;
-        }
+        if (!amount || !receiverId)
+          return `❌ Missing required fields. Provide both 'amount' and 'receiverId'.`;
 
-        // Validate receiver ID format (basic check)
-        if (!receiverId.match(/^\d+\.\d+\.\d+$/)) {
-          return `Error: Invalid receiver account ID format. Should be in format "0.0.12345".`;
-        }
+        if (typeof amount !== "number" || amount <= 0)
+          return `❌ Amount must be a positive number.`;
 
-        // Get environment variables
+        if (!receiverId.match(/^\d+\.\d+\.\d+$/))
+          return `❌ Invalid Hedera account ID format. Use "0.0.xxxxxx".`;
+
         const env = getEnvVars();
-        
-        console.log(`🔄 Transferring ${amount} TPYUSD to ${receiverId}...`);
-        
-        // Execute the transfer
+
         const result = await hederaService.transferTokens(
           env.senderAccountId,
           env.senderPrivateKey,
@@ -59,29 +49,18 @@ export function createTransferTool(): DynamicTool {
         );
 
         if (result.success && result.transactionId) {
-          const hashScanUrl = `https://hashscan.io/testnet/transaction/${result.transactionId}`;
-          const response = `✅ Successfully transferred ${amount} TPYUSD to account ${receiverId}.
-          
-Transaction Details:
+          return `✅ Transferred ${amount} TPYUSD to ${receiverId}.
+
 - Transaction ID: ${result.transactionId}
-- Status: Completed
-- Explorer: ${hashScanUrl}
-
-The funds have been sent and should be available in the recipient's account within seconds.`;
-
-          console.log("✅ Transfer completed successfully");
-          return response;
-        } else {
-          const errorMsg = `❌ Transfer failed: ${result.error || 'Unknown error'}`;
-          console.error(errorMsg);
-          return errorMsg;
+- Explorer: https://hashscan.io/testnet/transaction/${result.transactionId}`;
         }
-        
+
+        return `❌ Transfer failed: ${result.error || "Unknown error"}`;
       } catch (error) {
-        const errorMsg = `❌ Unexpected error during transfer: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        console.error(errorMsg);
-        return errorMsg;
+        return `❌ Unexpected error: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`;
       }
-    }
+    },
   });
 }

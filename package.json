@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@hashgraph/sdk": "^2.75.0"
+    "@hashgraph/sdk": "^2.75.0",
+    "@langchain/google-genai": "^1.0.0",
+    "langchain": "^1.0.1"
   }
 }
