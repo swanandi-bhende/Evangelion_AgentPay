@@ -1,5 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { initializeAgentExecutor, AgentExecutor, DynamicTool } from "langchain";
+import { createAgent, DynamicTool } from "langchain";
 import dotenv from "dotenv";
 
 import { createTransferTool } from "./agent/tools/transferTool";
@@ -7,9 +7,8 @@ import { createInfoTool } from "./agent/tools/infoTool";
 
 dotenv.config();
 
-
 export class AgentService {
-  private agentExecutor: AgentExecutor | null = null;
+  private agentExecutor: ReturnType<typeof createAgent> | null = null;
   private initializing = false;
 
   constructor() {
@@ -60,12 +59,11 @@ export class AgentService {
         }),
       ];
 
-      const executor = await initializeAgentExecutor(
+      const executor = await createAgent({
+        model: chatModelAdapter,
         tools,
-        chatModelAdapter,
-        "zero-shot-react-description",
-        process.env.NODE_ENV === "development"
-      );
+        // removed agentType because it's not accepted in this version
+      });
 
       this.agentExecutor = executor;
       console.log("✅ Gemini Agent initialized successfully.");
@@ -85,10 +83,14 @@ export class AgentService {
     try {
       console.log("💬 Processing user message:", message);
 
-      const result = await this.agentExecutor.call({ input: message });
+      // Assuming invoke returns a string response now
+      const result = await this.agentExecutor.invoke({
+        messages: [{ role: "user", content: message }],
+      });
 
+      // If result is string, return directly, else fallback to JSON
       const output =
-        (result.output as string) || "I'm sorry, I couldn't generate a response.";
+        typeof result === "string" ? result : JSON.stringify(result);
 
       console.log("✅ Gemini Agent response complete.");
       return output;
