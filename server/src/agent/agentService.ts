@@ -2,8 +2,6 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { initializeAgentExecutor } from "langchain/agents";
 import type { AgentExecutor } from "langchain/agents";
 import { DynamicTool } from "langchain/tools";
-import { LLMChain } from "langchain/chains";
-import { PromptTemplate } from "langchain/prompts"; 
 import { createTransferTool } from "./tools/transferTool.js";
 import { createInfoTool } from "./tools/infoTool.js";
 
@@ -12,7 +10,6 @@ export class AgentService {
   private initializing = false;
 
   constructor() {
-    // Fire-and-forget initialization
     this.initializeAgent().catch((err) =>
       console.error("Agent initialization failed:", err)
     );
@@ -35,16 +32,6 @@ export class AgentService {
         maxOutputTokens: 2048,
       });
 
-      const prompt = new PromptTemplate({
-        template: "{input}",
-        inputVariables: ["input"],
-      });
-
-      const model = new LLMChain({
-        llm: chatModel as any, 
-        prompt,
-      });
-
       const tools = [
         new DynamicTool({
           name: "transferTool",
@@ -58,11 +45,12 @@ export class AgentService {
         }),
       ];
 
+      // Pass the LLM directly here
       const executor = await initializeAgentExecutor(
         tools,
-        model as any,
+        chatModel,
         "zero-shot-react-description",
-        process.env.NODE_ENV === "development" 
+        process.env.NODE_ENV === "development"
       );
 
       this.agentExecutor = executor;
@@ -83,31 +71,11 @@ export class AgentService {
     try {
       console.log("Processing user message:", message);
 
-      const systemPrompt = `You are AgentPay, a helpful AI assistant for cross-border payments.
-You help users send TPYUSD tokens on the Hedera blockchain.
-
-Responsibilities:
-1. Transfer TPYUSD tokens to valid Hedera account IDs.
-2. Provide information about the system and token transfers.
-3. Be concise, friendly, and security-conscious.
-
-Guidelines:
-- Confirm transfer details (amount & recipient).
-- Never reveal private keys or sensitive data.
-- Always return clear transaction results with HashScan links.
-
-Environment:
-Sender Account: ${process.env.SENDER_ACCOUNT_ID}
-Token: TPYUSD (Test PayPal USD)
-Network: Hedera Testnet
-
-User message: ${message}`;
-
-      const result = await this.agentExecutor.call({ input: systemPrompt });
+      // Pass user input as 'input' key expected by the agent
+      const result = await this.agentExecutor.call({ input: message });
 
       const output =
-        (result.output as string) ||
-        "I'm sorry, I couldn't generate a response.";
+        (result.output as string) || "I'm sorry, I couldn't generate a response.";
 
       console.log("Gemini Agent response complete.");
       return output;
