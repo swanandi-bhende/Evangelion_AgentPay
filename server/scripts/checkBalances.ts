@@ -1,5 +1,5 @@
-import { getEnvVars } from "../utils/env";
-import { hederaService } from "../src/services/hederaService";
+import { getEnvVars } from "../utils/env.js";
+import { hederaService } from "../src/services/hederaService.js";
 
 async function checkBalances() {
   const env = getEnvVars();

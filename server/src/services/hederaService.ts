@@ -8,9 +8,7 @@ import {
   TokenId,
   AccountBalanceQuery
 } from "@hashgraph/sdk";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { getEnvVars } from "../../utils/env.js";  // <-- fixed import path with .js
 
 export interface TransferResult {
   success: boolean;

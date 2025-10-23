@@ -4,8 +4,8 @@ import type { AgentExecutor } from "langchain/agents";
 import { DynamicTool } from "langchain/tools";
 import { LLMChain } from "langchain/chains";
 import { PromptTemplate } from "langchain/prompts"; 
-import { createTransferTool } from "./tools/transferTool";
-import { createInfoTool } from "./tools/infoTool";
+import { createTransferTool } from "./tools/transferTool.js";
+import { createInfoTool } from "./tools/infoTool.js";
 
 export class AgentService {
   private agentExecutor: AgentExecutor | null = null;

@@ -1,6 +1,6 @@
 import { DynamicTool } from "@langchain/core/tools";
-import { hederaService } from "../../services/hederaService";
-import { getEnvVars } from "../../../utils/env";
+import { hederaService } from "../../services/hederaService.js";
+import { getEnvVars } from "../../../utils/env.js";
 
 /**
  * Tool for transferring tokens on Hedera network
@@ -49,18 +49,17 @@ Example: {"amount": 10, "receiverId": "0.0.12345"}`,
         );
 
         if (result.success && result.transactionId) {
-          return `✅ Transferred ${amount} TPYUSD to ${receiverId}.
+          const txUrl = `https://hashscan.io/testnet/transaction/${result.transactionId}`;
+          return `✅ Successfully transferred ${amount} TPYUSD to ${receiverId}.
 
-- Transaction ID: ${result.transactionId}
-- Explorer: https://hashscan.io/testnet/transaction/${result.transactionId}`;
+Transaction ID: ${result.transactionId}
+View on Explorer: ${txUrl}`;
+        } else {
+          return `❌ Transfer failed: ${result.error || "Unknown error"}`;
         }
-
-        return `❌ Transfer failed: ${result.error || "Unknown error"}`;
       } catch (error) {
-        return `❌ Unexpected error: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`;
+        return `❌ Transfer tool error: ${error instanceof Error ? error.message : "Unknown error"}`;
       }
-    },
+    }
   });
 }

@@ -1,5 +1,5 @@
-import { hederaService } from "../src/services/hederaService";
-import { getEnvVars } from "../utils/env";
+import { hederaService } from "../src/services/hederaService.js";
+import { getEnvVars } from "../utils/env.js";
 
 
 async function testTransfer() {

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts",
@@ -12,7 +12,8 @@
     "create-token": "ts-node scripts/createToken.ts",
     "associate-token": "ts-node scripts/associateToken.ts",
     "test-transfer": "ts-node scripts/testTransfer.ts",
-    "check-balances": "ts-node scripts/checkBalances.ts"
+    "check-balances": "ts-node scripts/checkBalances.ts",
+    "test-agent": "node --loader ts-node/esm scripts/testAgent.ts"
   },
   "keywords": [],
   "author": "",
