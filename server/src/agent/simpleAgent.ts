@@ -10,7 +10,7 @@ export class SimpleAgent {
    * Process message with simple pattern matching
    */
   async processMessage(message: string): Promise<string> {
-    console.log("🤖 Simple agent processing:", message);
+    console.log("Simple agent processing:", message);
     
     const lowerMessage = message.toLowerCase().trim();
     
@@ -48,7 +48,7 @@ Or type "help" to see all available commands.`;
     try {
       const env = getEnvVars();
       
-      console.log(`🔄 Processing transfer: ${amount} TPYUSD to ${receiverId}`);
+      console.log(`Processing transfer: ${amount} TPYUSD to ${receiverId}`);
       
       const result = await hederaService.transferTokens(
         env.senderAccountId,
@@ -60,7 +60,7 @@ Or type "help" to see all available commands.`;
       
       if (result.success && result.transactionId) {
         const hashScanUrl = `https://hashscan.io/testnet/transaction/${result.transactionId}`;
-        return `✅ Success! I've sent ${amount} TPYUSD to ${receiverId}.
+        return `Success! I've sent ${amount} TPYUSD to ${receiverId}.
 
 Transaction Details:
 • Amount: ${amount} TPYUSD
@@ -70,17 +70,17 @@ Transaction Details:
 
 The transfer is complete and the funds should be available immediately.`;
       } else {
-        return `❌ Sorry, the transfer failed: ${result.error || 'Unknown error'}`;
+        return `Sorry, the transfer failed: ${result.error || 'Unknown error'}`;
       }
     } catch (error) {
-      return `❌ Transfer error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      return `Transfer error: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
   
   private getHelpResponse(): string {
     const env = getEnvVars();
     
-    return `🤖 **AgentPay Help**
+    return `**AgentPay Help**
 
 I can help you send TPYUSD tokens on the Hedera Testnet.
 
