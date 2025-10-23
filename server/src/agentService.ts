@@ -34,7 +34,6 @@ export class AgentService {
         maxOutputTokens: 2048,
       });
 
-      // Adapter for older LangChain versions:
       const chatModelAdapter: any = {
         ...chatModel,
         _llmType() {
@@ -62,7 +61,6 @@ export class AgentService {
       const executor = await createAgent({
         model: chatModelAdapter,
         tools,
-        // removed agentType because it's not accepted in this version
       });
 
       this.agentExecutor = executor;
@@ -83,12 +81,10 @@ export class AgentService {
     try {
       console.log("💬 Processing user message:", message);
 
-      // Assuming invoke returns a string response now
       const result = await this.agentExecutor.invoke({
         messages: [{ role: "user", content: message }],
       });
 
-      // If result is string, return directly, else fallback to JSON
       const output =
         typeof result === "string" ? result : JSON.stringify(result);
 

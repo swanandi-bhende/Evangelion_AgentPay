@@ -3,14 +3,15 @@
     "@hashgraph/sdk": "^2.75.0",
     "@langchain/google-genai": "^1.0.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
     "helmet": "^8.1.0",
     "langchain": "^1.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
-    "@types/express": "^5.0.3",
+    "@types/express": "^4.17.23",
     "@types/helmet": "^0.0.48",
     "@types/node": "^24.9.1",
     "ts-node": "^10.9.2",

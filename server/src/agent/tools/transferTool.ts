@@ -1,6 +1,6 @@
 import { DynamicTool } from "@langchain/core/tools";
 import { hederaService } from "../../hederaService.ts";
-import { getEnvVars } from "../../../utils/env.js";
+import { getEnvVars } from "../../../utils/env";
 
 /**
  * Tool for transferring tokens on Hedera network

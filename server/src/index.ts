@@ -1,20 +1,18 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { agentService } from "./agentService"; // no extension needed for ts files
-import { simpleAgent } from "./agent/simpleAgent"; // assuming .js file, no change needed
-import { hederaService } from "./hederaService"; // no extension needed for ts files
+import { agentService } from "./agentService";
+import { simpleAgent } from "./agent/simpleAgent";
+import { hederaService } from "./hederaService";
 import { getEnvVars, validateEnvironment } from "../utils/env";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Health check endpoint
 app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "OK",
@@ -24,7 +22,6 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// Chat endpoint for AI agent
 app.post("/api/chat", async (req: Request, res: Response) => {
   try {
     const { message } = req.body;
@@ -35,8 +32,6 @@ app.post("/api/chat", async (req: Request, res: Response) => {
         error: "Message is required and must be a string",
       });
     }
-
-    console.log(`Received message: ${message}`);
 
     let response: string;
 
@@ -53,7 +48,6 @@ app.post("/api/chat", async (req: Request, res: Response) => {
       agentType: agentService.isReady() ? "ai" : "simple",
     });
   } catch (error) {
-    console.error("Chat endpoint error:", error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
@@ -61,7 +55,6 @@ app.post("/api/chat", async (req: Request, res: Response) => {
   }
 });
 
-// Test transfer endpoint
 app.post("/test-transfer", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
@@ -89,7 +82,6 @@ app.post("/test-transfer", async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
-    console.error("/test-transfer error:", error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
@@ -97,7 +89,6 @@ app.post("/test-transfer", async (req: Request, res: Response) => {
   }
 });
 
-// Get token balances for sender and recipient
 app.get("/balances", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
@@ -127,7 +118,6 @@ app.get("/balances", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("/balances error:", error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
@@ -135,7 +125,6 @@ app.get("/balances", async (req: Request, res: Response) => {
   }
 });
 
-// Validate environment variables on startup
 try {
   validateEnvironment();
   console.log("Environment variables validated");
@@ -144,7 +133,6 @@ try {
   process.exit(1);
 }
 
-// Start server
 app.listen(PORT, () => {
   console.log(`AgentPay Backend running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
