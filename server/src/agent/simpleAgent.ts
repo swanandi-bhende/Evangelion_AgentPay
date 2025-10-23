@@ -1,4 +1,4 @@
-import { getEnvVars } from "../../utils/env.js";
+import { getEnvVars } from "../../utils/env";
 import { hederaService } from "../hederaService.ts";
 
 /**

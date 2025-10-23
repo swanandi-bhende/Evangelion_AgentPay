@@ -1,6 +1,6 @@
 import ChatInterface from '../components/ChatInterface';
 import './globals.css';
-import '@/components/ChatStyles.css';
+import '../components/ChatStyles.css';
 
 export default function Home() {
   return (
