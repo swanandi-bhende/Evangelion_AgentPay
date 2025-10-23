@@ -1,5 +1,5 @@
 import { DynamicTool } from "@langchain/core/tools";
-import { hederaService } from "../../services/hederaService.js";
+import { hederaService } from "../../hederaService.ts";
 import { getEnvVars } from "../../../utils/env.js";
 
 /**

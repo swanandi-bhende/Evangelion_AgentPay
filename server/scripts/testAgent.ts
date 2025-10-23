@@ -1,4 +1,4 @@
-import { agentService } from "../src/agent/agentService.js";
+import { agentService } from "../src/agentService.ts";
 
 async function testAgent() {
   console.log("Testing AI Agent...");

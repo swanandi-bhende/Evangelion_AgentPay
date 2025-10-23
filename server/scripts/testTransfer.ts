@@ -1,4 +1,4 @@
-import { hederaService } from "../src/services/hederaService.js";
+import { hederaService } from "../src/hederaService.ts";
 import { getEnvVars } from "../utils/env.js";
 
 

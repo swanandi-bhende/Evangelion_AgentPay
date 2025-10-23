@@ -2,8 +2,8 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { initializeAgentExecutor } from "langchain/agents";
 import type { AgentExecutor } from "langchain/agents";
 import { DynamicTool } from "langchain/tools";
-import { createTransferTool } from "./tools/transferTool.js";
-import { createInfoTool } from "./tools/infoTool.js";
+import { createTransferTool } from "./agent/tools/transferTool.ts";
+import { createInfoTool } from "./agent/tools/infoTool.ts";
 
 export class AgentService {
   private agentExecutor: AgentExecutor | null = null;

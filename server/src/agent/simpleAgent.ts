@@ -1,5 +1,5 @@
 import { getEnvVars } from "../../utils/env.js";
-import { hederaService } from "../services/hederaService.js";
+import { hederaService } from "../hederaService.ts";
 
 /**
  * Simple rule-based agent as fallback

@@ -8,7 +8,7 @@ import {
   TokenId,
   AccountBalanceQuery
 } from "@hashgraph/sdk";
-import { getEnvVars } from "../../utils/env.js";  // <-- fixed import path with .js
+import { getEnvVars } from "../utils/env.ts";  // <-- fixed import path with .js
 
 export interface TransferResult {
   success: boolean;
