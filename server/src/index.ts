@@ -1,10 +1,10 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { agentService } from "./agentService.ts";
-import { simpleAgent } from "./agent/simpleAgent.js";
-import { hederaService } from "./hederaService.ts";
-import { getEnvVars, validateEnvironment } from "../utils/env.js";
+import { agentService } from "./agentService"; // no extension needed for ts files
+import { simpleAgent } from "./agent/simpleAgent"; // assuming .js file, no change needed
+import { hederaService } from "./hederaService"; // no extension needed for ts files
+import { getEnvVars, validateEnvironment } from "../utils/env";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "OK",
     message: "AgentPay Backend is running",
@@ -25,7 +25,7 @@ app.get("/health", (req, res) => {
 });
 
 // Chat endpoint for AI agent
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", async (req: Request, res: Response) => {
   try {
     const { message } = req.body;
 
@@ -62,7 +62,7 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // Test transfer endpoint
-app.post("/test-transfer", async (req, res) => {
+app.post("/test-transfer", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
     const { amount = 1 } = req.body;
@@ -98,7 +98,7 @@ app.post("/test-transfer", async (req, res) => {
 });
 
 // Get token balances for sender and recipient
-app.get("/balances", async (req, res) => {
+app.get("/balances", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
 
