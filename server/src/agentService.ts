@@ -7,6 +7,17 @@ import { createInfoTool } from "./agent/tools/infoTool";
 
 dotenv.config();
 
+class GeminiChatModel extends ChatGoogleGenerativeAI {
+  _llmType() {
+    return "google-genai-adapter";
+  }
+
+  async predict(prompt: string) {
+    const response = await this.invoke(prompt);
+    return response?.content ?? "No response";
+  }
+}
+
 export class AgentService {
   private agentExecutor: ReturnType<typeof createAgent> | null = null;
   private initializing = false;
@@ -27,23 +38,12 @@ export class AgentService {
       const apiKey = process.env.GOOGLE_API_KEY;
       if (!apiKey) throw new Error("Missing GOOGLE_API_KEY environment variable");
 
-      const chatModel = new ChatGoogleGenerativeAI({
+      const chatModel = new GeminiChatModel({
         apiKey,
-        model: "gemini-pro",
+        model: "gemini-2.5-flash",
         temperature: 0.3,
         maxOutputTokens: 2048,
       });
-
-      const chatModelAdapter: any = {
-        ...chatModel,
-        _llmType() {
-          return "google-genai-adapter";
-        },
-        async predict(prompt: string) {
-          const response = await chatModel.invoke(prompt);
-          return response?.content ?? "No response";
-        },
-      };
 
       const tools = [
         new DynamicTool({
@@ -58,12 +58,11 @@ export class AgentService {
         }),
       ];
 
-      const executor = await createAgent({
-        model: chatModelAdapter,
+      this.agentExecutor = await createAgent({
+        model: chatModel,
         tools,
       });
 
-      this.agentExecutor = executor;
       console.log("✅ Gemini Agent initialized successfully.");
     } catch (error) {
       console.error("Error initializing Gemini Agent:", error);
@@ -71,6 +70,53 @@ export class AgentService {
     } finally {
       this.initializing = false;
     }
+  }
+
+  /**
+   * Extract a readable final text message from the LangChain result
+   */
+  private extractReadableResponse(result: any): string {
+    if (!result) return "No response received from model.";
+
+    // 1️⃣ If result itself is a string
+    if (typeof result === "string") return result.trim();
+
+    // 2️⃣ If result.output or result.content exists
+    if (typeof result.output === "string") return result.output.trim();
+    if (typeof result.content === "string") return result.content.trim();
+
+    // 3️⃣ Try to find final AI message
+    if (Array.isArray(result.messages)) {
+      // Look for the last AI message
+      const aiMsg = [...result.messages].reverse().find(
+        (msg) => msg.id?.[2] === "AIMessage" || msg.id?.includes("AIMessage")
+      );
+
+      if (aiMsg) {
+        const content = (aiMsg as any)?.kwargs?.content ?? (aiMsg as any)?.content;
+        if (typeof content === "string") return content.trim();
+
+        // Handle array-based content
+        if (Array.isArray(content)) {
+          const textParts = content
+            .map((part: any) =>
+              typeof part === "string"
+                ? part
+                : part.text ||
+                  part.functionCall?.name ||
+                  JSON.stringify(part)
+            )
+            .join("\n");
+          return textParts.trim();
+        }
+      }
+    }
+
+    // 4️⃣ Fallback: Try returnValues.output
+    if (result?.returnValues?.output) return result.returnValues.output.trim();
+
+    // 5️⃣ Last resort: return JSON for debugging
+    return JSON.stringify(result, null, 2);
   }
 
   async processMessage(message: string): Promise<string> {
@@ -85,11 +131,14 @@ export class AgentService {
         messages: [{ role: "user", content: message }],
       });
 
-      const output =
-        typeof result === "string" ? result : JSON.stringify(result);
+      // Debug log full agent response
+      console.log("🧠 Full LangChain output:", JSON.stringify(result, null, 2));
 
-      console.log("✅ Gemini Agent response complete.");
-      return output;
+      // Extract and return a clean text response
+      const readable = this.extractReadableResponse(result);
+
+      console.log("✅ Gemini Agent response complete:", readable);
+      return readable;
     } catch (error) {
       console.error("❌ Error during agent execution:", error);
       return `I encountered an error while processing your request.\n\nError: ${

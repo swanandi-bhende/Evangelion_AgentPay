@@ -13,6 +13,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// 🩺 Health check endpoint
 app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "OK",
@@ -22,6 +23,7 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
+// 💬 Chat endpoint (AI + Simple agent fallback)
 app.post("/api/chat", async (req: Request, res: Response) => {
   try {
     const { message } = req.body;
@@ -33,21 +35,52 @@ app.post("/api/chat", async (req: Request, res: Response) => {
       });
     }
 
-    let response: string;
+    console.log("🗣️ Incoming user message:", message);
 
+    let rawResponse: string;
+
+    // Prefer AI agent, fallback to simple agent
     if (agentService.isReady()) {
-      response = await agentService.processMessage(message);
+      rawResponse = await agentService.processMessage(message);
     } else {
-      console.log("AI agent not ready, using simple agent");
-      response = await simpleAgent.processMessage(message);
+      console.log("⚙️ AI agent not ready — using simple agent");
+      rawResponse = await simpleAgent.processMessage(message);
     }
+
+    // 🧠 Clean up response: extract human-readable text
+    let cleanResponse = rawResponse;
+
+    try {
+      const parsed = JSON.parse(rawResponse);
+
+      if (Array.isArray(parsed.messages)) {
+        // Find the last AIMessage with readable content
+        const aiMessage = [...parsed.messages]
+          .reverse()
+          .find(
+            (msg) =>
+              msg.type === "constructor" &&
+              msg.id?.includes("AIMessage") &&
+              typeof msg.kwargs?.content === "string"
+          );
+
+        if (aiMessage?.kwargs?.content) {
+          cleanResponse = aiMessage.kwargs.content;
+        }
+      }
+    } catch {
+      // Not JSON — keep original
+    }
+
+    console.log("✅ Final AI response:", cleanResponse);
 
     res.json({
       success: true,
-      response,
+      response: cleanResponse,
       agentType: agentService.isReady() ? "ai" : "simple",
     });
   } catch (error) {
+    console.error("❌ Chat processing error:", error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
@@ -55,6 +88,7 @@ app.post("/api/chat", async (req: Request, res: Response) => {
   }
 });
 
+// 🔁 Manual test endpoint for token transfer
 app.post("/test-transfer", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
@@ -82,6 +116,7 @@ app.post("/test-transfer", async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
+    console.error("❌ Transfer test failed:", error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
@@ -89,6 +124,7 @@ app.post("/test-transfer", async (req: Request, res: Response) => {
   }
 });
 
+// 💰 Token balance check
 app.get("/balances", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
@@ -118,6 +154,7 @@ app.get("/balances", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    console.error("❌ Balance check failed:", error);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Internal server error",
@@ -125,19 +162,23 @@ app.get("/balances", async (req: Request, res: Response) => {
   }
 });
 
+// ✅ Validate env vars before start
 try {
   validateEnvironment();
-  console.log("Environment variables validated");
+  console.log("✅ Environment variables validated successfully.");
 } catch (error) {
-  console.error("Environment validation failed:", error);
+  console.error("❌ Environment validation failed:", error);
   process.exit(1);
 }
 
+// 🚀 Start server
 app.listen(PORT, () => {
-  console.log(`AgentPay Backend running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`Chat endpoint: http://localhost:${PORT}/api/chat`);
-  console.log(`Test transfer endpoint: http://localhost:${PORT}/test-transfer`);
-  console.log(`Balances endpoint: http://localhost:${PORT}/balances`);
-  console.log(`Agent status: ${agentService.isReady() ? "Ready" : "Initializing..."}`);
+  console.log(`🚀 AgentPay Backend running on port ${PORT}`);
+  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
+  console.log(`💬 Chat endpoint: http://localhost:${PORT}/api/chat`);
+  console.log(`💸 Test transfer endpoint: http://localhost:${PORT}/test-transfer`);
+  console.log(`📊 Balances endpoint: http://localhost:${PORT}/balances`);
+  console.log(
+    `🤖 Agent status: ${agentService.isReady() ? "Ready" : "Initializing..."}`
+  );
 });
