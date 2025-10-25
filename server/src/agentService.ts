@@ -1,4 +1,4 @@
-import { intelligentAgent } from "./agent/intelligentAgent.js";
+import { IntelligentAgent } from "./agent/intelligentAgent.js";
 import { simpleAgent } from "./agent/simpleAgent.js";
 
 /**
@@ -10,6 +10,7 @@ import { simpleAgent } from "./agent/simpleAgent.js";
  */
 export class AgentService {
   private useIntelligentAgent: boolean = true;
+  private intelligentAgentInstance: IntelligentAgent | null = null;
 
   constructor() {
     // Check if we have the required API key
@@ -17,12 +18,22 @@ export class AgentService {
       console.warn('⚠️ No GOOGLE_API_KEY found, falling back to simple agent');
       this.useIntelligentAgent = false;
     }
+    // Lazily instantiate intelligent agent if available
+    if (this.useIntelligentAgent) {
+      try {
+        this.intelligentAgentInstance = new IntelligentAgent();
+      } catch (err) {
+        console.error('Failed to initialize IntelligentAgent, falling back to simple agent:', err);
+        this.useIntelligentAgent = false;
+        this.intelligentAgentInstance = null;
+      }
+    }
   }
 
   async processMessage(message: string): Promise<string> {
     try {
-      if (this.useIntelligentAgent) {
-        return await intelligentAgent.processMessage(message);
+      if (this.useIntelligentAgent && this.intelligentAgentInstance) {
+        return await this.intelligentAgentInstance.processMessage(message);
       } else {
         return await simpleAgent.processMessage(message);
       }
@@ -33,7 +44,18 @@ export class AgentService {
   }
 
   isReady(): boolean {
-    return true; // We always have at least the simple agent available
+    // If we're configured to use the intelligent agent, report readiness
+    // based on whether it was successfully instantiated. Otherwise the
+    // simple agent is always ready.
+    if (this.useIntelligentAgent) {
+      return this.intelligentAgentInstance !== null;
+    }
+    return true;
+  }
+
+  getActiveAgentName(): string {
+    if (this.useIntelligentAgent && this.intelligentAgentInstance) return 'intelligent';
+    return 'simple';
   }
 }
 
