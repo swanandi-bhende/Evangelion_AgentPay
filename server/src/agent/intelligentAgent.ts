@@ -4,6 +4,7 @@ import { currencyService, CurrencyService } from '../utils/currency.js';
 import { hederaService } from '../hederaService.js';
 import { getEnvVars } from '../../utils/env.js';
 import { complianceService, ComplianceCheck } from '../services/compliance.js';
+import { simpleAgent } from './simpleAgent.js';
 
 dotenv.config();
 
@@ -57,8 +58,15 @@ export class IntelligentAgent {
     } else {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Use a safe default model; if the model is not available the code will fallback
-        this.model = genAI.getGenerativeModel({ model: 'gemini-1.5' });
+        // Try a reliable text model first; if unsupported the code will fallback to local parser
+        // text-bison is commonly available for the Generative API
+        try {
+          this.model = genAI.getGenerativeModel({ model: 'models/text-bison-001' });
+        } catch (innerErr) {
+          console.warn('Preferred model unavailable, attempting alternative model names...', innerErr);
+          // fallback attempt
+          this.model = genAI.getGenerativeModel({ model: 'gemini-1.5' });
+        }
       } catch (err) {
         console.error('Error initializing GoogleGenerativeAI model, falling back to local parser:', err);
         this.model = null;
@@ -75,6 +83,33 @@ export class IntelligentAgent {
 
   private async parseInstructions(message: string): Promise<ParsedInstruction> {
     try {
+      // Quick check: if the user provided a direct Hedera account id (0.0.12345), prefer local structured parsing
+      const accountMatch = message.match(/(\d+\.\d+\.\d+)/);
+      if (accountMatch) {
+        const accountId = accountMatch[0];
+        const amt = CurrencyService.parseAmount(message) || { amount: 0, currency: 'USD' } as any;
+        const amount = amt.amount || 0;
+        const fromCurrency = (amt.currency || 'USD').toUpperCase();
+
+        return {
+          action: message.toLowerCase().includes('send') ? 'send' : 'unknown',
+          amount,
+          fromCurrency,
+          toCurrency: fromCurrency === 'USD' ? 'USD' : fromCurrency,
+          recipientAccount: accountId,
+          recipientName: undefined,
+          recipientLocation: undefined,
+          relationship: 'unknown',
+          urgency: 'normal',
+          purpose: 'unknown',
+          regulatoryContext: {
+            requiresScreening: amount > 3000,
+            purposeCode: this.mapPurposeToCode('unknown'),
+            isFamilyRemittance: false
+          }
+        };
+      }
+
       // If model is available, prefer it
       if (this.model) {
         const prompt = `You are a payment processing AI. Parse this payment instruction into structured data.
@@ -96,12 +131,12 @@ export class IntelligentAgent {
         "urgency": "normal|high",
         "purpose": "family_support|business|personal|unknown"
       }`;
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  const result = await this.model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
 
-        // Parse and validate the JSON response
-        const parsed = JSON.parse(text);
+  // Parse and validate the JSON response
+  const parsed = JSON.parse(text);
       
       // Enhanced validation with relationship context
       const normalizedRecipientName = parsed.recipientName?.toLowerCase();
@@ -218,6 +253,11 @@ export class IntelligentAgent {
   }
 
   async processMessage(message: string): Promise<string> {
+    // Short-circuit help requests to the simple agent's help response
+    const lower = message.toLowerCase();
+    if (lower.includes('help') || lower.includes('what can you do') || lower.includes('how this works') || lower.includes('examples')) {
+      return simpleAgent.getHelpResponse();
+    }
     try {
       console.log('🤖 Processing message:', message);
 

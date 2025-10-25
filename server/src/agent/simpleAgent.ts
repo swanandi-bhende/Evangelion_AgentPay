@@ -76,20 +76,24 @@ The transfer is complete and the funds should be available immediately.`;
     }
   }
   
-  private getHelpResponse(): string {
+  // ⬇️ Changed from private → public
+  public getHelpResponse(): string {
     const env = getEnvVars();
-    
-    return `**AgentPay Help**
+    return `Welcome to AgentPay - Your AI-Powered Remittance Assistant!
 
-I can help you send TPYUSD tokens on the Hedera Testnet.
+I can help you send TPYUSD tokens on the Hedera Testnet. Here's what I can do:
 
-**Available Commands:**
-• "Send [amount] TPYUSD to [account ID]" - Transfer tokens
-• "Help" - Show this message
+• Send payments using natural language
+• Provide transaction details and verification links
+• Answer questions about cross-border payments
 
-**Examples:**
-• "Send 10 TPYUSD to 0.0.1234567"
-• "Send 5.5 TPYUSD to ${env.recipientAccountId}"
+Try saying one of the examples below or type "help" for this message:
+
+Examples:
+• Send 10 TPYUSD to 0.0.1234567
+• Help me understand how this works
+• What can you do?
+• Send 5 TPYUSD to recipient
 
 **Current Setup:**
 • Sender: ${env.senderAccountId}
