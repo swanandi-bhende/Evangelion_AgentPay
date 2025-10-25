@@ -1,26 +1,18 @@
-# Use official Node.js LTS image
-FROM node:20
-
-# Set working directory
+# Stage 1: Build
+FROM node:20 AS builder
 WORKDIR /app
-
-# Copy package files first for caching
 COPY package*.json ./
-
-# Install production dependencies only
-RUN npm install --omit=dev
-
-# Copy the rest of the code
+RUN npm install
 COPY . .
-
-# Build TypeScript project
 RUN npm run build
 
-# Expose the port (Railway sets PORT)
+# Stage 2: Production image
+FROM node:20 AS production
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --omit=dev
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 3001
-
-# Set default PORT environment variable
 ENV PORT=3001
-
-# Start the app using compiled JS
-CMD ["node", "dist/src/index.js"]
+CMD ["node", "dist/index.js"]
