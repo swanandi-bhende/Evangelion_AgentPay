@@ -9,8 +9,18 @@ import { getEnvVars, validateEnvironment } from "../utils/env";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// ✅ Production CORS configuration
+const corsOptions = {
+  origin: [
+    "http://localhost:3000", // Local dev
+    process.env.FRONTEND_URL || "https://your-frontend.vercel.app", // Replace or use env var
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
 app.use(helmet());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // 🩺 Health check endpoint
@@ -39,7 +49,6 @@ app.post("/api/chat", async (req: Request, res: Response) => {
 
     let rawResponse: string;
 
-    // Prefer AI agent, fallback to simple agent
     if (agentService.isReady()) {
       rawResponse = await agentService.processMessage(message);
     } else {
@@ -47,14 +56,12 @@ app.post("/api/chat", async (req: Request, res: Response) => {
       rawResponse = await simpleAgent.processMessage(message);
     }
 
-    // 🧠 Clean up response: extract human-readable text
     let cleanResponse = rawResponse;
 
     try {
       const parsed = JSON.parse(rawResponse);
 
       if (Array.isArray(parsed.messages)) {
-        // Find the last AIMessage with readable content
         const aiMessage = [...parsed.messages]
           .reverse()
           .find(
@@ -178,7 +185,5 @@ app.listen(PORT, () => {
   console.log(`💬 Chat endpoint: http://localhost:${PORT}/api/chat`);
   console.log(`💸 Test transfer endpoint: http://localhost:${PORT}/test-transfer`);
   console.log(`📊 Balances endpoint: http://localhost:${PORT}/balances`);
-  console.log(
-    `🤖 Agent status: ${agentService.isReady() ? "Ready" : "Initializing..."}`
-  );
+  console.log(`🤖 Agent status: ${agentService.isReady() ? "Ready" : "Initializing..."}`);
 });
