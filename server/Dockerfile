@@ -1,20 +1,26 @@
-# Use official Node.js 20 LTS image
+# Use official Node.js LTS image
 FROM node:20
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first for caching
+# Copy package files first for caching
 COPY package*.json ./
 
-# Install only production dependencies
+# Install production dependencies only
 RUN npm install --omit=dev
 
-# Copy the rest of the application code
+# Copy the rest of the code
 COPY . .
 
-# Expose a port for reference (Railway will override with its own PORT)
-EXPOSE 3000
+# Build TypeScript project
+RUN npm run build
 
-# Start the app using the PORT environment variable provided by Railway
-CMD ["node", "index.js"]
+# Expose the port (Railway sets PORT)
+EXPOSE 3001
+
+# Set default PORT environment variable
+ENV PORT=3001
+
+# Start the app using compiled JS
+CMD ["node", "dist/src/index.js"]
