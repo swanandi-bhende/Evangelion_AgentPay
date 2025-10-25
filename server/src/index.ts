@@ -1,19 +1,19 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { agentService } from "./agentService";
-import { simpleAgent } from "./agent/simpleAgent";
-import { hederaService } from "./hederaService";
-import { getEnvVars, validateEnvironment } from "../utils/env";
+import { agentService } from "./agentService.js";        // <-- .js for ESM
+import { simpleAgent } from "./agent/simpleAgent.js";    // <-- .js for ESM
+import { hederaService } from "./hederaService.js";      // <-- .js for ESM
+import { getEnvVars, validateEnvironment } from "../utils/env.js"; // <-- .js for ESM
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 // ✅ Production CORS configuration
 const corsOptions = {
   origin: [
-    "http://localhost:3000", // Local dev
-    process.env.FRONTEND_URL || "https://your-frontend.vercel.app", // Replace or use env var
+    "http://localhost:3000",
+    process.env.FRONTEND_URL || "https://your-frontend.vercel.app",
   ],
   credentials: true,
   optionsSuccessStatus: 200,
@@ -23,7 +23,7 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// 🩺 Health check endpoint
+// 🩺 Health check
 app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "OK",
@@ -33,47 +33,37 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// 💬 Chat endpoint (AI + Simple agent fallback)
-app.post("/api/chat", async (req: Request, res: Response) => {
+// 💬 Chat endpoint
+interface ChatRequestBody {
+  message?: string;
+}
+
+app.post("/api/chat", async (req: Request<{}, {}, ChatRequestBody>, res: Response) => {
   try {
     const { message } = req.body;
 
     if (!message || typeof message !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: "Message is required and must be a string",
-      });
+      return res.status(400).json({ success: false, error: "Message is required and must be a string" });
     }
 
     console.log("🗣️ Incoming user message:", message);
 
-    let rawResponse: string;
-
-    if (agentService.isReady()) {
-      rawResponse = await agentService.processMessage(message);
-    } else {
-      console.log("⚙️ AI agent not ready — using simple agent");
-      rawResponse = await simpleAgent.processMessage(message);
-    }
+    const rawResponse = agentService.isReady()
+      ? await agentService.processMessage(message)
+      : await simpleAgent.processMessage(message);
 
     let cleanResponse = rawResponse;
 
     try {
       const parsed = JSON.parse(rawResponse);
-
       if (Array.isArray(parsed.messages)) {
-        const aiMessage = [...parsed.messages]
-          .reverse()
-          .find(
-            (msg) =>
-              msg.type === "constructor" &&
-              msg.id?.includes("AIMessage") &&
-              typeof msg.kwargs?.content === "string"
-          );
-
-        if (aiMessage?.kwargs?.content) {
-          cleanResponse = aiMessage.kwargs.content;
-        }
+        const aiMessage = [...parsed.messages].reverse().find(
+          (msg) =>
+            msg.type === "constructor" &&
+            msg.id?.includes("AIMessage") &&
+            typeof msg.kwargs?.content === "string"
+        );
+        if (aiMessage?.kwargs?.content) cleanResponse = aiMessage.kwargs.content;
       }
     } catch {
       // Not JSON — keep original
@@ -81,22 +71,19 @@ app.post("/api/chat", async (req: Request, res: Response) => {
 
     console.log("✅ Final AI response:", cleanResponse);
 
-    res.json({
-      success: true,
-      response: cleanResponse,
-      agentType: agentService.isReady() ? "ai" : "simple",
-    });
+    res.json({ success: true, response: cleanResponse, agentType: agentService.isReady() ? "ai" : "simple" });
   } catch (error) {
     console.error("❌ Chat processing error:", error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Internal server error",
-    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Internal server error" });
   }
 });
 
 // 🔁 Manual test endpoint for token transfer
-app.post("/test-transfer", async (req: Request, res: Response) => {
+interface TransferRequestBody {
+  amount?: number;
+}
+
+app.post("/test-transfer", async (req: Request<{}, {}, TransferRequestBody>, res: Response) => {
   try {
     const env = getEnvVars();
     const { amount = 1 } = req.body;
@@ -117,17 +104,11 @@ app.post("/test-transfer", async (req: Request, res: Response) => {
         hashScanUrl: `https://hashscan.io/testnet/transaction/${result.transactionId}`,
       });
     } else {
-      res.status(400).json({
-        success: false,
-        error: result.error,
-      });
+      res.status(400).json({ success: false, error: result.error });
     }
   } catch (error) {
     console.error("❌ Transfer test failed:", error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Internal server error",
-    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Internal server error" });
   }
 });
 
@@ -136,40 +117,24 @@ app.get("/balances", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
 
-    const senderBalance = await hederaService.getTokenBalance(
-      env.senderAccountId,
-      env.tokenId
-    );
-
-    const recipientBalance = await hederaService.getTokenBalance(
-      env.recipientAccountId,
-      env.tokenId
-    );
+    const senderBalance = await hederaService.getTokenBalance(env.senderAccountId, env.tokenId);
+    const recipientBalance = await hederaService.getTokenBalance(env.recipientAccountId, env.tokenId);
 
     res.json({
       success: true,
       tokenId: env.tokenId,
       balances: {
-        sender: {
-          accountId: env.senderAccountId,
-          balance: senderBalance,
-        },
-        recipient: {
-          accountId: env.recipientAccountId,
-          balance: recipientBalance,
-        },
+        sender: { accountId: env.senderAccountId, balance: senderBalance },
+        recipient: { accountId: env.recipientAccountId, balance: recipientBalance },
       },
     });
   } catch (error) {
     console.error("❌ Balance check failed:", error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Internal server error",
-    });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Internal server error" });
   }
 });
 
-// ✅ Validate env vars before start
+// ✅ Validate environment
 try {
   validateEnvironment();
   console.log("✅ Environment variables validated successfully.");

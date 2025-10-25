@@ -46,12 +46,14 @@ async function createTestToken() {
 }
 
 // Run the script
-createTestToken().then(tokenId => {
-  console.log("\nToken creation complete!");
-  console.log("Add this to your .env file:");
-  console.log(`TOKEN_ID=${tokenId}`);
-  process.exit(0);
-}).catch(error => {
-  console.error("Script failed:", error);
-  process.exit(1);
-});
+createTestToken()
+  .then(tokenId => {
+    console.log("\nToken creation complete!");
+    console.log("Add this to your .env file:");
+    console.log(`TOKEN_ID=${tokenId}`);
+    process.exit(0);
+  })
+  .catch(error => {
+    console.error("Script failed:", error);
+    process.exit(1);
+  });

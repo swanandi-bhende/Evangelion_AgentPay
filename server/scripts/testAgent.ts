@@ -1,4 +1,4 @@
-import { agentService } from "../src/agentService.ts";
+import { agentService } from "../src/agentService.js"; // <-- added .js for ESM
 
 async function testAgent() {
   console.log("Testing AI Agent...");
@@ -31,8 +31,13 @@ async function testAgent() {
 
 // Delay start by 3 seconds to allow agentService to initialize if needed
 setTimeout(() => {
-  testAgent().catch((error) => {
-    console.error("TestAgent encountered an error:", error);
-    process.exit(1);
-  });
+  testAgent()
+    .then(() => {
+      console.log("Test completed successfully!");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("TestAgent encountered an error:", error);
+      process.exit(1);
+    });
 }, 3000);

@@ -1,20 +1,24 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "NodeNext",
-    "lib": ["ES2020"],
-    "outDir": "./dist",
-    "strict": true,
     "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": ".",
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": false,
+    "sourceMap": true,
+    "declaration": true,
+    "noImplicitAny": true,
     "isolatedModules": true
   },
-  "include": ["src/**/*", "scripts/**/*"],
+  "include": ["src/**/*", "scripts/**/*", "utils/**/*"],
   "exclude": ["node_modules", "dist"]
 }

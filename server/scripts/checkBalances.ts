@@ -1,5 +1,5 @@
 import { getEnvVars } from "../utils/env.js";
-import { hederaService } from "../src/hederaService.ts";
+import { hederaService } from "../src/hederaService.js";
 
 async function checkBalances() {
   const env = getEnvVars();
@@ -19,4 +19,9 @@ async function checkBalances() {
   console.log(`Token: https://hashscan.io/testnet/token/${env.tokenId}`);
 }
 
-checkBalances();
+checkBalances()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error("Failed to fetch balances:", err);
+    process.exit(1);
+  });

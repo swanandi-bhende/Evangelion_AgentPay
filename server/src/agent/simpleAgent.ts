@@ -1,5 +1,5 @@
-import { getEnvVars } from "../../utils/env";
-import { hederaService } from "../hederaService.ts";
+import { getEnvVars } from "../../utils/env.js"; // <-- added .js for ESM
+import { hederaService } from "../hederaService.js"; // <-- added .js for ESM
 
 /**
  * Simple rule-based agent as fallback
@@ -36,7 +36,7 @@ export class SimpleAgent {
     
     // Default response
     return `I understand you want to: "${message}"
-    
+
 I can help you send TPYUSD tokens to any Hedera account. Try saying:
 "Send 10 TPYUSD to 0.0.1234567"
 

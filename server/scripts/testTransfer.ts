@@ -1,6 +1,5 @@
-import { hederaService } from "../src/hederaService.ts";
-import { getEnvVars } from "../utils/env.js";
-
+import { hederaService } from "../src/hederaService.js"; // <-- added .js for ESM
+import { getEnvVars } from "../utils/env.js"; // <-- added .js for ESM
 
 async function testTransfer() {
   console.log("Starting test transfer...");
