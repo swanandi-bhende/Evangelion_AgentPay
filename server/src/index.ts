@@ -1,15 +1,15 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { agentService } from "./agentService.js";        // <-- .js for ESM
-import { simpleAgent } from "./agent/simpleAgent.js";    // <-- .js for ESM
-import { hederaService } from "./hederaService.js";      // <-- .js for ESM
-import { getEnvVars, validateEnvironment } from "../utils/env.js"; // <-- .js for ESM
+import { agentService } from "./agentService.js";        
+import { simpleAgent } from "./agent/simpleAgent.js";    
+import { hederaService } from "./hederaService.js";      
+import { getEnvVars, validateEnvironment } from "../utils/env.js"; 
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 
-// ✅ Production CORS configuration
+// ✅ CORS configuration
 const corsOptions = {
   origin: [
     "http://localhost:3000",
@@ -25,7 +25,7 @@ app.use(express.json());
 
 // 🩺 Health check
 app.get("/health", (req: Request, res: Response) => {
-  res.json({
+  res.status(200).json({
     status: "OK",
     message: "AgentPay Backend is running",
     network: "Hedera Testnet",
@@ -41,7 +41,6 @@ interface ChatRequestBody {
 app.post("/api/chat", async (req: Request<{}, {}, ChatRequestBody>, res: Response) => {
   try {
     const { message } = req.body;
-
     if (!message || typeof message !== "string") {
       return res.status(400).json({ success: false, error: "Message is required and must be a string" });
     }
@@ -78,7 +77,7 @@ app.post("/api/chat", async (req: Request<{}, {}, ChatRequestBody>, res: Respons
   }
 });
 
-// 🔁 Manual test endpoint for token transfer
+// 🔁 Token transfer test
 interface TransferRequestBody {
   amount?: number;
 }
@@ -116,7 +115,6 @@ app.post("/test-transfer", async (req: Request<{}, {}, TransferRequestBody>, res
 app.get("/balances", async (req: Request, res: Response) => {
   try {
     const env = getEnvVars();
-
     const senderBalance = await hederaService.getTokenBalance(env.senderAccountId, env.tokenId);
     const recipientBalance = await hederaService.getTokenBalance(env.recipientAccountId, env.tokenId);
 
