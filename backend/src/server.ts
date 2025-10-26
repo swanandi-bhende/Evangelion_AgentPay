@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import HederaSetup from './services/hedera-setup';
 import HederaService from './services/hedera-service';
+import AgentService from './services/agent-service';
 
 dotenv.config();
 
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Initialize agent service
+const agentService = new AgentService();
 
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -70,6 +74,33 @@ app.post('/api/transfer', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Transfer failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// New endpoint for AI agent
+app.post('/api/agent/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Message is required'
+      });
+    }
+
+    const result = await agentService.processMessage(message);
+
+    res.json({
+      status: 'success',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Agent processing failed',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
