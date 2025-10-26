@@ -6,8 +6,11 @@ RUN apk add --no-cache python3 make g++
 # Create and set working directory
 WORKDIR /usr/src/app
 
-# First, copy only package files to leverage Docker cache
-COPY ["package.json", "package-lock.json*", "./"]
+# Copy package.json (must exist)
+COPY package.json ./
+
+# Try to copy package-lock if it exists
+COPY package-lock.json ./
 
 # Install dependencies with legacy peer deps flag
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
