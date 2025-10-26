@@ -5,7 +5,8 @@ import {
   TokenId,
   TransferTransaction,
   TransactionReceipt,
-  Hbar
+  Hbar,
+  TransactionResponse
 } from "@hashgraph/sdk";
 
 class HederaService {
@@ -21,7 +22,7 @@ class HederaService {
     receiverId: string, 
     tokenId: string, 
     amount: number
-  ): Promise<string> {
+  ): Promise<{ transactionId: string; status: string }> {
     try {
       const senderAccountId = AccountId.fromString(senderId);
       const senderPrivateKey = PrivateKey.fromStringECDSA(senderKey);
@@ -30,6 +31,8 @@ class HederaService {
 
       this.client.setOperator(senderAccountId, senderPrivateKey);
 
+      console.log(`Initiating transfer of ${amount} TPYUSD from ${senderId} to ${receiverId}`);
+
       const transferTx = new TransferTransaction()
         .addTokenTransfer(htsTokenId, senderAccountId, -amount)
         .addTokenTransfer(htsTokenId, receiverAccountId, amount)
@@ -37,16 +40,31 @@ class HederaService {
         .freezeWith(this.client);
 
       const transferSign = await transferTx.sign(senderPrivateKey);
-      const transferSubmit = await transferSign.execute(this.client);
+      const transferSubmit: TransactionResponse = await transferSign.execute(this.client);
       const transferRx: TransactionReceipt = await transferSubmit.getReceipt(this.client);
 
-      if (transferRx.status.toString() !== "SUCCESS") {
-        throw new Error(`Transaction failed with status: ${transferRx.status.toString()}`);
-      }
+      const transactionId = transferSubmit.transactionId.toString();
+      const status = transferRx.status.toString();
 
-      return transferSubmit.transactionId.toString();
+      console.log(`Transfer completed: ${transactionId}, Status: ${status}`);
+
+      return {
+        transactionId,
+        status
+      };
     } catch (error) {
       console.error("Error in transferTokens:", error);
+      throw new Error(`Transfer failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async getTransactionStatus(transactionId: string): Promise<string> {
+    try {
+      // This is a simplified status check - in real implementation, 
+      // you'd query the network for transaction status
+      return "SUCCESS";
+    } catch (error) {
+      console.error("Error checking transaction status:", error);
       throw error;
     }
   }

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import HederaSetup from './services/hedera-setup';
+import HederaService from './services/hedera-service';
 
 dotenv.config();
 
@@ -34,6 +35,41 @@ app.get('/api/test-hedera', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Hedera connection failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+app.post('/api/transfer', async (req, res) => {
+  try {
+    const { amount, recipient } = req.body;
+    
+    if (!amount || !recipient) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Amount and recipient are required'
+      });
+    }
+
+    const hederaService = new HederaService();
+    
+    const result = await hederaService.transferTokens(
+      process.env.SENDER_ACCOUNT_ID!,
+      process.env.SENDER_PRIVATE_KEY!,
+      recipient,
+      process.env.TOKEN_ID!,
+      amount
+    );
+
+    res.json({
+      status: 'success',
+      message: 'Transfer completed successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Transfer failed',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
