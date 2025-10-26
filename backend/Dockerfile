@@ -1,18 +1,23 @@
+# Use Node.js 18 on Alpine for smaller image
 FROM node:18-alpine
 
+# Set working directory
 WORKDIR /usr/src/app
 
-# Install deps
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production || npm install --only=production
+# Copy dependency files
+COPY package*.json ./
 
-# Copy source
+# Install dependencies (with peer deps fix)
+RUN npm install --legacy-peer-deps
+
+# Copy backend source code
 COPY . .
 
-# Build TypeScript
+# Build TypeScript project
 RUN npm run build
 
-ENV PORT=3001
-EXPOSE 3001
+# Expose backend port (Railway uses $PORT automatically)
+EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+# Start the compiled server
+CMD ["npm", "start"]
