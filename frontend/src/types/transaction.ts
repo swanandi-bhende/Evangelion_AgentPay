@@ -12,5 +12,6 @@ export interface Transaction {
 export interface TransactionContextType {
   transactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id' | 'timestamp'>) => void;
+  addTransactionFromAgent: (response: string, transactionId?: string) => void;
   loading: boolean;
 }

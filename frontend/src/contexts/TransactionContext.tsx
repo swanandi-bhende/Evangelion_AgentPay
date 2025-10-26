@@ -10,7 +10,6 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load transactions from localStorage on app start
     const savedTransactions = localStorage.getItem('agentpay_transactions');
     if (savedTransactions) {
       setTransactions(JSON.parse(savedTransactions));
@@ -29,8 +28,36 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('agentpay_transactions', JSON.stringify(updatedTransactions));
   };
 
+  const addTransactionFromAgent = (response: string, transactionId?: string) => {
+    // Extract transaction details from agent response
+    const amountMatch = response.match(/(\d+(?:\.\d+)?)\s*(TPYUSD|tokens)/i);
+    const recipientMatch = response.match(/(0\.0\.\d+)/);
+    
+    if (amountMatch && recipientMatch && transactionId) {
+      const amount = parseFloat(amountMatch[1]);
+      const recipient = recipientMatch[1];
+      const token = amountMatch[2].toUpperCase();
+      
+      const transaction: Omit<Transaction, 'id' | 'timestamp'> = {
+        transactionId,
+        amount,
+        recipient,
+        status: 'success',
+        hashScanUrl: `https://hashscan.io/testnet/transaction/${transactionId}`,
+        token
+      };
+
+      addTransaction(transaction);
+    }
+  };
+
   return (
-    <TransactionContext.Provider value={{ transactions, addTransaction, loading }}>
+    <TransactionContext.Provider value={{ 
+      transactions, 
+      addTransaction, 
+      addTransactionFromAgent,
+      loading 
+    }}>
       {children}
     </TransactionContext.Provider>
   );

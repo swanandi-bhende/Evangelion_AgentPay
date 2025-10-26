@@ -14,6 +14,18 @@ export interface TransferResponse {
   };
 }
 
+export interface AgentChatRequest {
+  message: string;
+}
+
+export interface AgentChatResponse {
+  status: string;
+  data: {
+    response: string;
+    transactionId?: string;
+  };
+}
+
 export const apiService = {
   async transferFunds(transferData: TransferRequest): Promise<TransferResponse> {
     const response = await fetch(`${API_BASE_URL}/api/transfer`, {
@@ -26,6 +38,22 @@ export const apiService = {
 
     if (!response.ok) {
       throw new Error('Transfer failed');
+    }
+
+    return response.json();
+  },
+
+  async sendChatMessage(messageData: AgentChatRequest): Promise<AgentChatResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/agent/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Chat request failed');
     }
 
     return response.json();

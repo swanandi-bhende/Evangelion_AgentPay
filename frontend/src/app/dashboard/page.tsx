@@ -39,7 +39,7 @@ export default function DashboardPage() {
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Dashboard Content - 2/3 width on large screens */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <Dashboard />
             </div>
             
