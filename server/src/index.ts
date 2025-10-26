@@ -30,7 +30,6 @@ app.get("/health", (req: Request, res: Response) => {
     message: "AgentPay Backend is running",
     network: "Hedera Testnet",
     agentReady: agentService.isReady(),
-    agentType: agentService.getActiveAgentName?.() || 'unknown'
   });
 });
 
@@ -48,8 +47,9 @@ app.post("/api/chat", async (req: Request<{}, {}, ChatRequestBody>, res: Respons
 
     console.log("🗣️ Incoming user message:", message);
 
-    // Delegate processing to AgentService which handles intelligent/simple fallback
-    const rawResponse = await agentService.processMessage(message);
+    const rawResponse = agentService.isReady()
+      ? await agentService.processMessage(message)
+      : await simpleAgent.processMessage(message);
 
     let cleanResponse = rawResponse;
 
@@ -70,7 +70,7 @@ app.post("/api/chat", async (req: Request<{}, {}, ChatRequestBody>, res: Respons
 
     console.log("✅ Final AI response:", cleanResponse);
 
-    res.json({ success: true, response: cleanResponse, agentType: agentService.getActiveAgentName?.() || (agentService.isReady() ? 'ai' : 'simple') });
+    res.json({ success: true, response: cleanResponse, agentType: agentService.isReady() ? "ai" : "simple" });
   } catch (error) {
     console.error("❌ Chat processing error:", error);
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Internal server error" });
@@ -110,20 +110,6 @@ app.post("/test-transfer", async (req: Request<{}, {}, TransferRequestBody>, res
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : "Internal server error" });
   }
 });
-
-// ⚠️ Debug: expose account public key (for diagnosing signature issues)
-app.get('/debug/account-key/:accountId?', async (req: Request, res: Response) => {
-  try {
-    const env = getEnvVars();
-    const accountId = req.params.accountId || env.senderAccountId;
-    const key = await hederaService.getAccountPublicKey(accountId);
-    res.json({ success: true, accountId, key });
-  } catch (error) {
-    console.error('❌ Debug account key failed:', error);
-    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Internal server error' });
-  }
-});
-
 
 // 💰 Token balance check
 app.get("/balances", async (req: Request, res: Response) => {

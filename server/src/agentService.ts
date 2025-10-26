@@ -1,61 +1,37 @@
-import { IntelligentAgent } from "./agent/intelligentAgent.js";
 import { simpleAgent } from "./agent/simpleAgent.js";
 
 /**
- * AgentService with intelligent Gemini-powered processing
- * 
- * This service uses the Gemini-powered intelligent agent for natural
- * language understanding and cross-border payment processing. It falls
- * back to the simple agent if there are any issues with the AI service.
+ * Lightweight AgentService fallback
+ *
+ * NOTE: The original implementation used langchain + @langchain/google-genai
+ * and attempted to construct a Gemini-backed agent. That code caused
+ * TypeScript mismatches during production builds in Docker (incompatible
+ * types across langchain & google-genai packages). To make CI/builds
+ * and deployments stable, this implementation intentionally provides a
+ * minimal wrapper around the existing `simpleAgent`.
+ *
+ * This preserves the public contract used by `src/index.ts`:
+ * - processMessage(message: string): Promise<string>
+ * - isReady(): boolean
+ *
+ * Future work: reintroduce a LangChain-based agent when compatible
+ * package versions are chosen and the TypeScript signatures are aligned.
  */
-export class AgentService {
-  private useIntelligentAgent: boolean = true;
-  private intelligentAgentInstance: IntelligentAgent | null = null;
 
+export class AgentService {
+  // No remote agent executor in this stable fallback
   constructor() {
-    // Check if we have the required API key
-    if (!process.env.GOOGLE_API_KEY) {
-      console.warn('⚠️ No GOOGLE_API_KEY found, falling back to simple agent');
-      this.useIntelligentAgent = false;
-    }
-    // Lazily instantiate intelligent agent if available
-    if (this.useIntelligentAgent) {
-      try {
-        this.intelligentAgentInstance = new IntelligentAgent();
-      } catch (err) {
-        console.error('Failed to initialize IntelligentAgent, falling back to simple agent:', err);
-        this.useIntelligentAgent = false;
-        this.intelligentAgentInstance = null;
-      }
-    }
+    // Intentionally synchronous and lightweight
   }
 
   async processMessage(message: string): Promise<string> {
-    try {
-      if (this.useIntelligentAgent && this.intelligentAgentInstance) {
-        return await this.intelligentAgentInstance.processMessage(message);
-      } else {
-        return await simpleAgent.processMessage(message);
-      }
-    } catch (error) {
-      console.error('Error in intelligent agent, falling back to simple agent:', error);
-      return await simpleAgent.processMessage(message);
-    }
+    // Delegate to simple rule-based agent
+    return await simpleAgent.processMessage(message);
   }
 
   isReady(): boolean {
-    // If we're configured to use the intelligent agent, report readiness
-    // based on whether it was successfully instantiated. Otherwise the
-    // simple agent is always ready.
-    if (this.useIntelligentAgent) {
-      return this.intelligentAgentInstance !== null;
-    }
+    // Always available (simple agent)
     return true;
-  }
-
-  getActiveAgentName(): string {
-    if (this.useIntelligentAgent && this.intelligentAgentInstance) return 'intelligent';
-    return 'simple';
   }
 }
 
