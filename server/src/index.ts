@@ -5,7 +5,6 @@ import { agentService } from "./agentService.js";
 import { simpleAgent } from "./agent/simpleAgent.js";    
 import { hederaService } from "./hederaService.js";      
 import { getEnvVars, validateEnvironment } from "../utils/env.js"; 
-import { getKycStatus, setKycStatus } from "./services/kycStore.js";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
@@ -112,31 +111,19 @@ app.post("/test-transfer", async (req: Request<{}, {}, TransferRequestBody>, res
   }
 });
 
-// 🛂 KYC endpoints
-app.get('/api/kyc/:accountId', async (req: Request, res: Response) => {
+// ⚠️ Debug: expose account public key (for diagnosing signature issues)
+app.get('/debug/account-key/:accountId?', async (req: Request, res: Response) => {
   try {
-    const { accountId } = req.params;
-    if (!accountId) return res.status(400).json({ success: false, error: 'accountId is required' });
-    const verified = getKycStatus(accountId);
-    res.json({ success: true, accountId, kycVerified: !!verified });
+    const env = getEnvVars();
+    const accountId = req.params.accountId || env.senderAccountId;
+    const key = await hederaService.getAccountPublicKey(accountId);
+    res.json({ success: true, accountId, key });
   } catch (error) {
-    console.error('❌ KYC GET error:', error);
+    console.error('❌ Debug account key failed:', error);
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Internal server error' });
   }
 });
 
-app.post('/api/kyc', async (req: Request, res: Response) => {
-  try {
-    const { accountId, name, idNumber, kycVerified } = req.body as { accountId?: string; name?: string; idNumber?: string; kycVerified?: boolean };
-    if (!accountId) return res.status(400).json({ success: false, error: 'accountId is required' });
-
-    setKycStatus(accountId, { kycVerified: !!kycVerified, name, idNumber });
-    res.json({ success: true, accountId, kycVerified: !!kycVerified });
-  } catch (error) {
-    console.error('❌ KYC POST error:', error);
-    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Internal server error' });
-  }
-});
 
 // 💰 Token balance check
 app.get("/balances", async (req: Request, res: Response) => {

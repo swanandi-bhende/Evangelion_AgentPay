@@ -182,7 +182,9 @@ Return JSON with:
 
   private async prepareTransferDetails(instruction: ParsedInstruction) {
     const recipient = instruction.recipientAccount || 
-      (instruction.recipientName && this.knownRecipients.get(instruction.recipientName)?.accountId);
+      (instruction.recipientName && this.knownRecipients.get(instruction.recipientName)?.accountId) ||
+      // Fallback to default recipient from environment when name lookup fails
+      getEnvVars().recipientAccountId;
 
     if (!recipient) {
       throw new Error('Recipient not found in known contacts');
@@ -259,26 +261,7 @@ Would you like me to proceed with this transfer? (Type 'yes' to confirm)`;
       );
 
       if (complianceResult.overallStatus !== 'APPROVED') {
-        const kycCheck = complianceResult.checks.find(c => c.type === 'KYC');
-        if (kycCheck && kycCheck.status !== 'PASSED') {
-          const details = kycCheck.details || '';
-          const m = details.match(/Sender KYC:\s*(true|false),\s*Recipient KYC:\s*(true|false)/i);
-          const senderKyc = m ? m[1].toLowerCase() === 'true' : false;
-          const recipientKyc = m ? m[2].toLowerCase() === 'true' : false;
-
-          const accounts: Array<{ role: string; accountId: string; missingFields: string[] }> = [];
-          if (!senderKyc) accounts.push({ role: 'sender', accountId: transferDetails.senderAccountId, missingFields: ['name', 'idNumber'] });
-          if (!recipientKyc) accounts.push({ role: 'recipient', accountId: transferDetails.recipientAccountId, missingFields: ['name', 'idNumber'] });
-
-          return JSON.stringify({
-            type: 'KYC_REQUIRED',
-            message: 'KYC info required for one or more accounts before this transfer can proceed.',
-            accounts,
-            originalConfirmation: confirmationMessage
-          });
-        }
-
-        throw new Error(`Transfer rejected: ${complianceResult.checks.find(c => c.status === 'FAILED')?.details}`);
+  throw new Error(`Transfer rejected: ${complianceResult.checks.find((c: any) => c.status === 'FAILED')?.details}`);
       }
 
       const result = await hederaService.transferTokens(
