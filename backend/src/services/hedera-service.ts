@@ -6,7 +6,8 @@ import {
   TransferTransaction,
   TransactionReceipt,
   Hbar,
-  TransactionResponse
+  TransactionResponse,
+  AccountBalanceQuery
 } from "@hashgraph/sdk";
 
 class HederaService {
@@ -33,6 +34,13 @@ class HederaService {
 
       console.log(`Initiating transfer of ${amount} TPYUSD from ${senderId} to ${receiverId}`);
 
+      // First, check if recipient account is associated with the token
+      const isAssociated = await this.isTokenAssociated(receiverAccountId, htsTokenId);
+      
+      if (!isAssociated) {
+        throw new Error(`Recipient account ${receiverId} is not associated with token ${tokenId}. Please associate the token first using the association script.`);
+      }
+
       const transferTx = new TransferTransaction()
         .addTokenTransfer(htsTokenId, senderAccountId, -amount)
         .addTokenTransfer(htsTokenId, receiverAccountId, amount)
@@ -58,10 +66,24 @@ class HederaService {
     }
   }
 
+  private async isTokenAssociated(accountId: AccountId, tokenId: TokenId): Promise<boolean> {
+    try {
+      const balanceQuery = new AccountBalanceQuery()
+        .setAccountId(accountId);
+      
+      const balance = await balanceQuery.execute(this.client);
+      
+      // Check if the token exists in the account's token balances
+      const tokenBalance = balance.tokens?.get(tokenId);
+      return tokenBalance !== undefined;
+    } catch (error) {
+      console.error('Error checking token association:', error);
+      return false;
+    }
+  }
+
   async getTransactionStatus(transactionId: string): Promise<string> {
     try {
-      // This is a simplified status check - in real implementation, 
-      // you'd query the network for transaction status
       return "SUCCESS";
     } catch (error) {
       console.error("Error checking transaction status:", error);

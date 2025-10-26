@@ -7,12 +7,17 @@ async function testAgent() {
   try {
     const agentService = new AgentService();
     
+    // Use the actual recipient account from environment that we know is associated
+    const recipientAccount = process.env.RECIPIENT_ACCOUNT_ID || '0.0.7103251';
+    
     const testMessages = [
-      "Send 10 TPYUSD to 0.0.2345678",
-      "I want to transfer 5 TPYUSD to account 0.0.2345678",
+      `Send 10 TPYUSD to ${recipientAccount}`,
+      `I want to transfer 5 TPYUSD to account ${recipientAccount}`,
       "How are you today?",
-      "Please send 15 tokens to 0.0.2345678"
+      `Please send 15 tokens to ${recipientAccount}`
     ];
+
+    console.log(`Testing with recipient account: ${recipientAccount}`);
 
     for (const message of testMessages) {
       console.log(`\n--- Testing: "${message}" ---`);

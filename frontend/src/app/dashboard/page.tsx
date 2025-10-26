@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/dashboard/Header';
 import Dashboard from '@/components/dashboard/Dashboard';
+import ChatInterface from '@/components/chat/ChatInterface';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -32,9 +33,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <Dashboard />
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Dashboard Content - 2/3 width on large screens */}
+            <div className="lg:col-span-2">
+              <Dashboard />
+            </div>
+            
+            {/* Chat Interface - 1/3 width on large screens */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-6">
+                <ChatInterface />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

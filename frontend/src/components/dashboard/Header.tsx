@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, MessageCircle } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -37,6 +37,10 @@ const Header: React.FC = () => {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <MessageCircle className="h-4 w-4" />
+              <span>AI Assistant Ready</span>
+            </div>
             <div className="flex items-center space-x-2">
               <User className="h-5 w-5 text-gray-400" />
               <span className="text-sm font-medium text-gray-700">{user?.name}</span>
