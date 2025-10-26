@@ -1,12 +1,16 @@
 FROM node:18-alpine
 
+# Add package dependencies
+RUN apk add --no-cache python3 make g++
+
+# Create and set working directory
 WORKDIR /usr/src/app
 
-# Copy package files first (helps with layer caching)
-COPY package*.json ./
+# First, copy only package files to leverage Docker cache
+COPY ["package.json", "package-lock.json*", "./"]
 
 # Install dependencies with legacy peer deps flag
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copy the rest of the application
 COPY . .
@@ -14,7 +18,8 @@ COPY . .
 # Build TypeScript code
 RUN npm run build
 
-# Expose the port (Railway will override with $PORT)
+# Set and expose the port (Railway will override PORT env var)
+ENV PORT=3001
 EXPOSE 3001
 
 # Start production server
