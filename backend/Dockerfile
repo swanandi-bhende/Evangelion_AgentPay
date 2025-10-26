@@ -9,9 +9,6 @@ WORKDIR /usr/src/app
 # Copy package.json (must exist)
 COPY package.json ./
 
-# Try to copy package-lock if it exists
-COPY package-lock.json ./
-
 # Install dependencies with legacy peer deps flag
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
