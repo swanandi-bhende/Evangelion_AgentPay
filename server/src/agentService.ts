@@ -1,22 +1,11 @@
+import dotenv from "dotenv";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createAgent, DynamicTool } from "langchain";
-import dotenv from "dotenv";
 
-import { createTransferTool } from "./agent/tools/transferTool.js"; // <-- .js for ESM
-import { createInfoTool } from "./agent/tools/infoTool.js";         // <-- .js for ESM
+import { createTransferTool } from "./agent/tools/transferTool.js";
+import { createInfoTool } from "./agent/tools/infoTool.js";
 
 dotenv.config();
-
-class GeminiChatModel extends ChatGoogleGenerativeAI {
-  _llmType() {
-    return "google-genai-adapter";
-  }
-
-  async predict(prompt: string) {
-    const response = await this.invoke(prompt);
-    return response?.content ?? "No response";
-  }
-}
 
 export class AgentService {
   private agentExecutor: ReturnType<typeof createAgent> | null = null;
@@ -38,12 +27,13 @@ export class AgentService {
       const apiKey = process.env.GOOGLE_API_KEY;
       if (!apiKey) throw new Error("Missing GOOGLE_API_KEY environment variable");
 
-      const chatModel = new GeminiChatModel({
+      // ✅ Correct property for Gemini API
+      const chatModel = new ChatGoogleGenerativeAI({
         apiKey,
-        model: "gemini-2.5-flash",
+        modelName: "gemini-2.5-flash",
         temperature: 0.3,
         maxOutputTokens: 2048,
-      });
+      }) as any; // 'any' cast needed for createAgent compatibility
 
       const tools: DynamicTool[] = [
         new DynamicTool({

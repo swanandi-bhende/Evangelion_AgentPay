@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { agentService } from "./agentService.js";        
-import { simpleAgent } from "./agent/simpleAgent.js";    
-import { hederaService } from "./hederaService.js";      
-import { getEnvVars, validateEnvironment } from "../utils/env.js"; 
+import { agentService } from "./agentService";        
+import { simpleAgent } from "./agent/simpleAgent";    
+import { hederaService } from "./hederaService";      
+import { getEnvVars, validateEnvironment } from "../utils/env";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;

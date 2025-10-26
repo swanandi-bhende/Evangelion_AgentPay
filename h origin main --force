@@ -1,0 +1,33 @@
+[33m41c3e7f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m docker changes part 2 251025_1559
+[33m4d9690f[m docker changes 251025_1557
+[33m9f8f1dc[m smooth backend deployment stuff 251025_1541
+[33mb3f94b8[m dockerfile adding 251025_1516
+[33ma77bd82[m backend deployment fix 251025_1508
+[33me525867[m backend deployment 2 251025_1419
+[33mc479366[m backend deployement 251025_1354
+[33m79ba35c[m agent response fix 251025_1230
+[33mc4e66e4[m frontend integration part 2 231025_1635
+[33m036ad4d[m debugging part 7 231025_1613
+[33m5936ba5[m debugging part 6 231025_1602
+[33m73e4190[m debugging part 5 231025_1538
+[33m089e3d8[m debugging part 4 231025_1514
+[33mee7b5d7[m restructing 231025_1449
+[33me47c375[m frontend integration 231025_1442
+[33m71810c4[m chat layout 231025_1327
+[33m9fe6546[m chat css 231025_1326
+[33mee0fe02[m other chat components 231025_1323
+[33mbef8758[m chat interface 231025_1322
+[33m6a8ce52[m css 231025_1313
+[33mc8ee97d[m agent debugging part 3 231025_1200
+[33medddbf6[m agent debugging part 2 231025_1135
+[33m89226dd[m debugging agentservice 231025_0951
+[33m43a3c57[m agent backup 221025_2339
+[33m858be23[m agent logic 21025_2312
+[33m4e6dfe3[m agent tools first 221025_2238
+[33m60ce345[m wallet balance logic 221025_2145
+[33m220378f[m cross wallet inetgration 221025_1751
+[33md9295f1[m token transfer same account 221025_1229
+[33m83aefc3[m creating test stablecoin 221025_1202
+[33mec12246[m initialising project 191025_1741
+[33m552e02e[m Rename project
+[33m9ae6170[m Initial commit
