@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-white overflow-hidden shadow rounded-lg">
+      <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
         <div className="px-4 py-5 sm:p-6">
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {user?.name}!
@@ -29,11 +29,11 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
           <div className="p-5">
             <div className="flex items-center">
               <div className="shrink-0">
-                <Send className="h-6 w-6 text-gray-400" />
+                <Send className="h-6 w-6 text-indigo-500" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -51,11 +51,11 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
           <div className="p-5">
             <div className="flex items-center">
               <div className="shrink-0">
-                <History className="h-6 w-6 text-gray-400" />
+                <History className="h-6 w-6 text-indigo-500" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -71,11 +71,11 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="shrink-0 bg-green-100 rounded-md p-2">
-                <Hash className="h-6 w-6 text-green-600" />
+              <div className="shrink-0 bg-indigo-50 rounded-md p-2">
+                <Hash className="h-6 w-6 text-indigo-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -93,7 +93,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="bg-white shadow-sm overflow-hidden sm:rounded-lg border border-gray-200">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Recent Transactions
