@@ -4,7 +4,7 @@ import helmet from "helmet";
 import { agentService } from "./agentService.js";        
 import { simpleAgent } from "./agent/simpleAgent.js";    
 import { hederaService } from "./hederaService.js";      
-import { getEnvVars, validateEnvironment } from "../utils/env.js"; 
+import { getEnvVars, validateEnvironment } from "./utils/env.js";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;

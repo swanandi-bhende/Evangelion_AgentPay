@@ -8,7 +8,7 @@ import {
   TokenId,
   AccountBalanceQuery
 } from "@hashgraph/sdk";
-import { getEnvVars } from "../utils/env.js"; // <-- .js for ESM
+import { getEnvVars } from "./utils/env.js";
 
 export interface TransferResult {
   success: boolean;

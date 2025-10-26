@@ -1,9 +1,6 @@
 {
-  "watch": ["src", "scripts"],
+  "watch": ["src"],
   "ext": ".ts,.js,.json",
-  "ignore": ["src/**/*.spec.ts", "node_modules"],
-  "exec": "node --loader ts-node/esm src/index.ts",
-  "env": {
-    "NODE_ENV": "development"
-  }
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "ts-node --esm src/index.ts"
 }

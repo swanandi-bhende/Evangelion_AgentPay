@@ -4,8 +4,8 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2022"],
-    "outDir": "./dist",
-    "rootDir": ".",
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -17,8 +17,15 @@
     "sourceMap": true,
     "declaration": true,
     "noImplicitAny": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*", "scripts/**/*", "utils/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifiers": true,
+    "preferTsExts": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "scripts"]
 }

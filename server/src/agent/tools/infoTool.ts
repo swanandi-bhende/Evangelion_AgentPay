@@ -1,5 +1,5 @@
 import { DynamicTool } from "@langchain/core/tools";
-import { getEnvVars } from "../../../utils/env.js"; // <-- added .js for ESM
+import { getEnvVars } from "../../utils/env.js";
 
 /**
  * Tool for providing information about the system

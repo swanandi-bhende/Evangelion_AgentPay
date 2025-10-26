@@ -1,4 +1,4 @@
-import { getEnvVars } from "../../utils/env.js"; // <-- added .js for ESM
+import { getEnvVars } from "../utils/env.js";
 import { hederaService } from "../hederaService.js"; // <-- added .js for ESM
 
 /**
