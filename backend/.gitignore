@@ -1,0 +1,12 @@
+# Hedera specific
+*.json
+*.key
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+.env
