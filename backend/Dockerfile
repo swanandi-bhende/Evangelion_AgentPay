@@ -6,21 +6,21 @@ RUN apk add --no-cache python3 make g++
 # Create and set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json (must exist)
-COPY package.json ./
+# Copy package.json and package-lock.json safely
+# (use relative path from the repo root to ensure Docker finds it)
+COPY backend/package*.json ./
 
-# Install dependencies with legacy peer deps flag
+# Install dependencies
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
-# Copy the rest of the application
-COPY . .
+# Copy the rest of the backend code
+COPY backend ./
 
 # Build TypeScript code
 RUN npm run build
 
-# Set and expose the port (Railway will override PORT env var)
+# Set and expose the port (Render overrides PORT)
 ENV PORT=3001
 EXPOSE 3001
 
-# Start production server
 CMD ["npm", "run", "start:prod"]
