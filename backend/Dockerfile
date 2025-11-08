@@ -2,13 +2,16 @@ FROM node:18-alpine
 
 RUN apk add --no-cache python3 make g++
 
+
 WORKDIR /usr/src/app
 
-COPY backend/package*.json ./
+# Copy package files from the current build context (backend) into the image
+COPY package*.json ./
 
 RUN npm install --legacy-peer-deps
 
-COPY backend/. ./
+# Copy the rest of the backend source files
+COPY . ./
 
 RUN npm run build
 
